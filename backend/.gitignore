@@ -1,3 +1,9 @@
 __pycache__
 venv
+uploaded_chunks/
 backend/frames/
+*.webm 
+*.wav
+*.pdf
+*.jpg
+multimodal_output.json
