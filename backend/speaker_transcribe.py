@@ -3,7 +3,7 @@ import os
 from diarization import diarize_audio, convert_to_wav
 from emotion_analysis import analyze_emotion
 
-model = whisper.load_model("base")
+model = whisper.load_model("medium")
 
 def transcribe_segmented_speakers(webm_path):
     wav_path = webm_path.replace(".webm", ".wav")

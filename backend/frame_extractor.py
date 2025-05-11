@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def extract_frames(video_path, output_folder="frames", fps=1):
+def extract_frames(video_path, output_folder="frames", fps=8):
     os.makedirs(output_folder, exist_ok=True)
     command = [
         "ffmpeg",
