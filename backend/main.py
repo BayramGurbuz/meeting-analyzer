@@ -42,9 +42,9 @@ def root():
 def generate_report():
     try:
         subprocess.run(["python", "generate_pdf.py"], check=True)
-        return JSONResponse(content={"status": "success", "message": "Rapor başarıyla oluşturuldu."})
+        return JSONResponse(content={"status": "success", "message": "The report was created successfully."})
     except subprocess.CalledProcessError:
-        return JSONResponse(status_code=500, content={"status": "error", "message": "Rapor oluşturulurken hata oluştu."})
+        return JSONResponse(status_code=500, content={"status": "error", "message": "An error occurred while generating the report."})
     
 @app.get("/download-report")
 def download_report():

@@ -4,7 +4,7 @@ import Recorder from "./Recorder";
 function App() {
   return (
     <div className="App">
-      <h1>Toplantı Analiz Sistemi</h1>
+      <h1>Meeting Analysis System</h1>
       <Recorder />
 
       {/* PDF İndirme Butonu */}
@@ -15,7 +15,7 @@ function App() {
           rel="noopener noreferrer"
           download
         >
-          <button>PDF Raporu İndir</button>
+          <button>Download PDF Report</button>
         </a>
       </div>
     </div>

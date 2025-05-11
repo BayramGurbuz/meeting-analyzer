@@ -48,14 +48,14 @@ const Recorder = () => {
 
   return (
     <div>
-      <h2>Toplantı Kaydı</h2>
+      <h2>Meeting Record</h2>
       <video ref={videoRef} width="480" height="360" style={{ border: "1px solid #ccc" }} />
       <br />
       <button onClick={startRecording} disabled={isRecording}>
-        Kamerayı Başlat ve Gönder
+        Launch Camera and Send
       </button>
       <button onClick={stopRecording} disabled={!isRecording} style={{ marginLeft: "10px" }}>
-        Kaydı Sonlandır
+        End Registration
       </button>
     </div>
   );
