@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+whisper
+speechbrain
+transformers
+deepface
+fpdf
+matplotlib
+torchaudio
+torch==2.7.0
+numpy
+pydub
+opencv-python
+pyannote.audio==3.3.2
+python-multipart
