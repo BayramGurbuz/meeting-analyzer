@@ -2,62 +2,121 @@ import React, { useRef, useState } from "react";
 import axios from "axios";
 
 const Recorder = () => {
-  const mediaRecorderRef = useRef(null);
-  const chunksRef = useRef([]);
-  const streamRef = useRef(null);
-  const videoRef = useRef(null);
+  // sadece UI için: buton etiketini güncellemekte kullanacağız
   const [isRecording, setIsRecording] = useState(false);
 
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    streamRef.current = stream;
+  // gerçek kayıp durumu burada tutulacak
+  const recordingRef = useRef(false);
+  const streamRef = useRef(null);
+  const recorderRef = useRef(null);
+  const counterRef = useRef(0);
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
+  // 1-chunk kaydını başlatıp 3s sonra durdurup, tekrar kendini çağıran fonksiyon
+  const recordChunk = () => {
+    if (!recordingRef.current || !streamRef.current) {
+      console.log("recordChunk: kayıt modunda değil veya stream yok");
+      return;
     }
 
-    const mediaRecorder = new MediaRecorder(stream);
+    console.log("recordChunk: starting chunk", counterRef.current);
 
-    mediaRecorder.ondataavailable = (e) => {
-      chunksRef.current.push(e.data);
+    const mediaRecorder = new MediaRecorder(streamRef.current, {
+      mimeType: "video/webm",
+    });
+    recorderRef.current = mediaRecorder;
+
+    mediaRecorder.onstart = () => {
+      console.log("MediaRecorder started");
     };
 
-    mediaRecorder.onstop = async () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      const formData = new FormData();
-      formData.append("file", blob, "chunk.webm");
+    mediaRecorder.ondataavailable = async (e) => {
+      console.log("ondataavailable, size:", e.data.size);
+      if (e.data && e.data.size > 0) {
+        const name = `chunk_${counterRef.current}.webm`;
+        const form = new FormData();
+        form.append("file", e.data, name);
 
-      await axios.post("http://localhost:8000/upload-chunk", formData);
-      chunksRef.current = [];
+        try {
+          const resp = await axios.post(
+            "http://127.0.0.1:8000/upload-chunk",
+            form,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+          console.log(name, "uploaded →", resp.data);
+        } catch (err) {
+          console.error("Upload error:", err);
+        }
 
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      setIsRecording(false);
+        counterRef.current += 1;
+      }
     };
 
-    mediaRecorderRef.current = mediaRecorder;
+    mediaRecorder.onstop = () => {
+      console.log("MediaRecorder stopped");
+      // eğer hâlâ kayıttaysak, hemen bir sonraki parçayı başlat
+      if (recordingRef.current) {
+        recordChunk();
+      }
+    };
+
+    // kayda başla ve 3s sonra stop et
     mediaRecorder.start();
-    setIsRecording(true);
+    setTimeout(() => {
+      if (mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+    }, 3000);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      streamRef.current = stream;
+      document.getElementById("preview").srcObject = stream;
+
+      counterRef.current = 0;
+      recordingRef.current = true;
+      setIsRecording(true);
+
+      console.log("startRecording: recordingRef set to true");
+      recordChunk();
+    } catch (err) {
+      console.error("getUserMedia error:", err);
+    }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-    }
+    console.log("stopRecording: recordingRef set to false");
+    recordingRef.current = false;
+    setIsRecording(false);
+
+    // o anki recorder’ı durdur
+    recorderRef.current?.stop();
+    // kamerayı kapat
+    streamRef.current?.getTracks().forEach((t) => t.stop());
   };
 
   return (
     <div>
-      <h2>Meeting Record</h2>
-      <video ref={videoRef} width="480" height="360" style={{ border: "1px solid #ccc" }} />
-      <br />
-      <button onClick={startRecording} disabled={isRecording}>
-        Launch Camera and Send
-      </button>
-      <button onClick={stopRecording} disabled={!isRecording} style={{ marginLeft: "10px" }}>
-        End Registration
-      </button>
+      <h2>Real-time Meeting Recorder</h2>
+      <video
+        id="preview"
+        width="400"
+        height="300"
+        autoPlay
+        muted
+        style={{ border: "1px solid #ccc" }}
+      ></video>
+      {!isRecording ? (
+        <button onClick={startRecording}>Start Meeting</button>
+      ) : (
+        <button onClick={stopRecording}>Stop Meeting</button>
+      )}
     </div>
   );
 };
+
 export default Recorder;
