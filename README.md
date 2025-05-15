@@ -35,11 +35,11 @@ A web application for real-time meeting recording, speaker diarization, emotion 
 
 ## ⚙️ Setup & Usage
 
-### 1. Environment Variables
+### 1. Environment Variable
 
 (Optional) If you decide to use an external OpenAI API key for summarization:
 
-```bash
+
 export OPENAI_API_KEY="sk-…"
 
 ### 2. Backend
