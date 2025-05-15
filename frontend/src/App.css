@@ -1,38 +1,238 @@
-.App {
-  text-align: center;
+/* -------------------------------------------------- */
+/*    GLOBAL RESET & BASE                              */
+/* -------------------------------------------------- */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* -------------------------------------------------- */
+/*    LAYOUT: BÜTÜN EKRAN İKİ PANEL                   */
+/* -------------------------------------------------- */
+.app-container {
+  display: flex;
+  height: 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* -------------------------------------------------- */
+/*    SOL PANEL: VIDEO & KONTROLLER                  */
+/* -------------------------------------------------- */
+.video-panel {
+  flex: 1;
+  padding: 20px;
+  background: #fff;
   display: flex;
   flex-direction: column;
+  align-items: center;            /* ← Ortala */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.video-panel h1 {
+  margin: 0 0 15px;
+  font-size: 22px;
+  color: #333;
+}
+
+/* Recorder ve butonları saran wrapper */
+.recorder-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;            /* ← Ortala */
+  margin-bottom: 16px;
+}
+
+/* Video öğesini biraz yuvarlak köşe yapalım */
+.recorder-wrapper video {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Start / Stop Meeting butonu */
+.recorder-wrapper button {
+  margin-top: 12px;               /* video'nun hemen altında */
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 50px;            /* pil şeklinde */
+  border: none;
+  color: #fff;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.App-link {
-  color: #61dafb;
+/* Kayıt başlamamış haldeki (Start) */
+.recorder-wrapper button:not(.active) {
+  background: linear-gradient(135deg, #6bc1ff, #007bff);
+}
+.recorder-wrapper button:not(.active):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Kayıt devam ederkenki (Stop) */
+.recorder-wrapper button.active {
+  background: linear-gradient(135deg, #ff6b6b, #dc3545);
+}
+.recorder-wrapper button.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
+/* -------------------------------------------------- */
+/*    PDF RAPOR BUTONU                               */
+/* -------------------------------------------------- */
+.btn-report {
+  width: calc(100% - 40px);       /* kenarlardan 20px boşluk */
+  margin-top: auto;
+  padding: 14px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #5d5fe1, #3f3fff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.btn-report:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
+/* -------------------------------------------------- */
+/*    SAĞ PANEL: TRANSCRIPT & EMOTION                */
+/* -------------------------------------------------- */
+.transcript-panel {
+  width: 360px;
+  padding: 20px;
+  overflow-y: auto;
+  background: #fafafa;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+}
+
+.transcript-panel h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.transcript-list {
+  margin-top: 10px;
+}
+
+/* Her bir transcript kartı */
+.transcript-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  transition: background 0.2s;
+}
+.transcript-item:hover {
+  background: #f5f5f5;
+}
+
+.transcript-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.speaker-name {
+  font-weight: bold;
+  color: #444;
+}
+.time-range {
+  font-size: 0.85em;
+  color: #888;
+}
+
+.transcript-text {
+  margin-bottom: 8px;
+  color: #555;
+  font-size: 14px;
+}
+
+.transcript-emotions span {
+  display: inline-block;
+  font-size: 0.8em;
+  margin-right: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e9ecef;
+  color: #333;
+}
+
+/* -------------------------------------------------- */
+/*    TOPLANTI ÖZETİ KUTUSU                           */
+/* -------------------------------------------------- */
+.summary-box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #e9f5ff;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+.summary-box h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #0056b3;
+}
+.summary-box pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* --- video-panel içinde konumlandırmak için --- */
+.recorder-button-wrapper {
+  position: relative;
+  width: 400px;      /* video ile aynı genişlik */
+  margin: 12px auto; /* ortala, video-altına yerleştir */
+}
+
+/* Start/Stop Meeting butonu */
+.btn-start {
+  width: 180px;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  /* gradient ile dikkat çekici renk */
+  background: linear-gradient(135deg, #6be56b, #28a745);
+}
+
+/* Kayıt devam ediyorsa kırmızıya dönsün */
+.btn-start.active {
+  background: linear-gradient(135deg, #ff6b6b, #dc3545);
+}
+
+/* Hover efektleri */
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+}
+
+/* Buton metni, o anki duruma göre */
+.btn-start:not(.active)::before {
+  content: "▶️ ";  /* Start’ta ok ikonu */
+}
+.btn-start.active::before {
+  content: "⏹️ "; /* Stop’ta kare ikonu */
 }

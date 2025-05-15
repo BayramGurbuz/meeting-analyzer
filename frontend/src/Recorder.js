@@ -101,20 +101,22 @@ const Recorder = () => {
 
   return (
     <div>
-      <h2>Real-time Meeting Recorder</h2>
       <video
         id="preview"
-        width="400"
-        height="300"
+        width="600"
+        height="450"
         autoPlay
         muted
         style={{ border: "1px solid #ccc" }}
       ></video>
-      {!isRecording ? (
-        <button onClick={startRecording}>Start Meeting</button>
-      ) : (
-        <button onClick={stopRecording}>Stop Meeting</button>
-      )}
+      <div className="recorder-button-wrapper">
+        <button
+          className={`btn-start ${isRecording ? "active" : ""}`}
+          onClick={isRecording ? stopRecording : startRecording}
+        >
+          {isRecording ? "Stop Meeting" : "Start Meeting"}
+        </button>
+      </div>
     </div>
   );
 };
