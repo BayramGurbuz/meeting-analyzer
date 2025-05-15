@@ -13,3 +13,4 @@ pydub
 opencv-python
 pyannote.audio==3.3.2
 python-multipart
+mediapipe

@@ -8,6 +8,7 @@ from emotion_analysis import analyze_emotion
 from frame_extractor import extract_frames
 from face_utils import load_known_faces, match_face
 from pydub import AudioSegment
+from lip_sync_utils import compute_mar
 
 # 1) Bilinen yüzleri ön yükle
 KNOWN_FACES_FOLDER = "known_faces"
@@ -21,7 +22,7 @@ whisper_model = whisper.load_model("base")
 def analyze_chunk(chunk_path: str) -> list[dict]:
     """
     .webm video parçası alır, speaker-diarization,
-    segment-by-segment transcribe + emotion + face-ID uygulayıp
+    segment-by-segment transcribe + emotion + face-ID + lip-sync uygulayıp
     bir liste döner:
     [
       {
@@ -49,41 +50,53 @@ def analyze_chunk(chunk_path: str) -> list[dict]:
     # D) Extract all frames once
     extract_frames(chunk_path, fps=2)
     all_frames = sorted(os.listdir("frames"))
+    print(f"[DEBUG] Extracted frames: {all_frames}")
 
     results = []
 
     for seg in segments:
         s, e = seg["start"], seg["end"]
-        speaker_id = seg["speaker"]
 
-        # 1) Transcribe only this slice
+        # Transcribe only this audio slice
         start_ms, end_ms = int(s * 1000), int(e * 1000)
         snippet = audio[start_ms:end_ms]
         temp_wav = f"temp_{start_ms}_{end_ms}.wav"
         snippet.export(temp_wav, format="wav")
-
         transcript = whisper_model.transcribe(temp_wav, language="en")
         text = transcript.get("text", "").strip()
         os.remove(temp_wav)
 
-        # 2) Voice emotion
+        # Voice emotion
         voice_emotion = analyze_emotion(text)
 
-        # 3) Face-ID & visual emotion: only frames in [s,e]
+        # Identify frames within this segment
         segment_frames = []
         for f in all_frames:
             sec = int(f.split("_")[1].split(".")[0])
             if s <= sec <= e:
                 segment_frames.append(f)
 
-        names = []
-        for f in segment_frames:
-            name = match_face(os.path.join("frames", f), known_faces)
-            if name:
-                names.append(name)
-        speaker_name = max(set(names), key=names.count) if names else "Unknown"
+        # Face-ID + lip-sync: MAR hesaplayarak konuşmacıyı seç
+        mouth_ratios: dict[str, list[float]] = {}
+        for frame in segment_frames:
+            frame_path = os.path.join("frames", frame)
+            name = match_face(frame_path, known_faces) or "Unknown"
+            mar = compute_mar(frame_path) or 0.0
+            print(f"[DEBUG] Frame={frame}, match={name}, MAR={mar:.3f}")
+            mouth_ratios.setdefault(name, []).append(mar)
 
-        # visual emotion on last frame if exists
+        # Speaker seçimi: en yüksek ortalama MAR
+        if mouth_ratios:
+            avg_mars = {
+                n: (sum(vals) / len(vals)) 
+                for n, vals in mouth_ratios.items() 
+                if n != "Unknown"
+            }
+            speaker_name = max(avg_mars, key=avg_mars.get) if avg_mars else "Unknown"
+        else:
+            speaker_name = "Unknown"
+
+        # Visual emotion on last frame of this segment
         visual_emotion = "unknown"
         if segment_frames and speaker_name != "Unknown":
             last = segment_frames[-1]
@@ -99,9 +112,9 @@ def analyze_chunk(chunk_path: str) -> list[dict]:
         results.append({
             "speaker": speaker_name,
             "start": round(s, 2),
-            "end": round(e, 2),
-            "text": text,
-            "voice_emotion": voice_emotion,
+            "end":   round(e, 2),
+            "text":  text,
+            "voice_emotion":  voice_emotion,
             "visual_emotion": visual_emotion
         })
 
