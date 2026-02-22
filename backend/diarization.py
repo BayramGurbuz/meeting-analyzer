@@ -2,7 +2,7 @@ import subprocess
 import os
 from pyannote.audio import Pipeline
 
-HUGGINGFACE_TOKEN = "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"  # Tokenı buraya yaz
+HUGGINGFACE_TOKEN = "hf_dKsEU*****************"  # Tokenı buraya yaz
 pipeline = Pipeline.from_pretrained(
     "pyannote/speaker-diarization",
     use_auth_token=HUGGINGFACE_TOKEN
